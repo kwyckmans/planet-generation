@@ -64,6 +64,10 @@ const main = async () => {
     const earth = PIXI.Sprite.from('assets/earth_equirectangular');
     earth.anchor.set(0.5);
 
+    const circle =new PIXI.Circle(100,100, 125)
+    
+    earth.mask = PIXI.MaskData.
+
     document.body.appendChild(app.view);
 
     let context = {
