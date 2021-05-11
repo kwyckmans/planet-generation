@@ -79,12 +79,6 @@ const main = async () => {
                 1,1,
                 0,1
             ],2)
-            // .addAttribute('a_color', [
-            //     1, 0, 0,
-            //     0, 1, 0,
-            //     0, 0, 1,
-            //     1, 0, 0,
-            // ], 3)
             .addIndex([0, 1, 2, 0, 2, 3]); // Specify triangles with index in position
             
 
