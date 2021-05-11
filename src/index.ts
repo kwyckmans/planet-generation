@@ -1,134 +1,104 @@
 import * as PIXI from "pixi.js";
 
 const load = (app: PIXI.Application) => {
-  return new Promise((resolve) => {
-    app.loader
-      .add("assets/test.glsl")
-      .add("assets/planet.glsl")
-      .add("assets/planet_vertex.glsl")
-      .add("assets/earth_equirectangular.png")
-      .load(() => {
-        resolve();
-      });
-  });
+    return new Promise((resolve) => {
+        app.loader
+            .add("assets/test.glsl")
+            .add("assets/planet.glsl")
+            .add("assets/planet_vertex.glsl")
+            .add("assets/earth_equirectangular.png")
+            .load(() => {
+                resolve();
+            });
+    });
 };
 
 const main = async () => {
-  // Actual app
-  let app = new PIXI.Application();
+    // Actual app
+    let app = new PIXI.Application();
 
-  // Display application properly
-  document.body.style.margin = "0";
-  app.renderer.view.style.position = "absolute";
-  app.renderer.view.style.display = "block";
+    // Display application properly
+    document.body.style.margin = "0";
+    app.renderer.view.style.position = "absolute";
+    app.renderer.view.style.display = "block";
 
-  // View size = windows
-  app.renderer.resize(window.innerWidth, window.innerHeight);
-
-  // Load assets
-  await load(app);
-
-  // // Draw a circle
-  // const p = new PIXI.Graphics();
-  // p.beginFill(0x000000)
-  // p.lineStyle(0)
-  // p.drawCircle(window.innerWidth / 2 - 60, window.innerHeight /2 - 60,120)
-  // p.endFill();
-
-  // const t = PIXI.RenderTexture.create({width: p.width, height: p.height})
-  // app.renderer.render(p, t);
-
-  // // Make a sprite from texture, no idea why though
-  // // const sprite = new PIXI.Sprite(t);
-  // // sprite.x = 100;
-
-  // app.stage.addChild(p)
-
-  // Load a shader and apply it through a filter
-  // // Why through a filter? How does the filter work?
-  // const filter = new PIXI.Filter('', app.loader.resources["assets/test.glsl"].data);
-  // p.filters = [filter]
-
-  // I can use Circle to create a mask to show part of the equirectangular picture.
-  // Unsure if I can just put the image over a circle and rotate it?
-  // let planet = new PIXI.Circle(10, 10, 2)
-
-  // Handle window resizing
-  window.addEventListener("resize", (e) => {
+    // View size = windows
     app.renderer.resize(window.innerWidth, window.innerHeight);
-    // sprite.x = window.innerWidth / 2 - sprite.width / 2;
-    // sprite.y = window.innerHeight / 2 - sprite.height / 2;
-  });
 
-  //Show a planet
-  // const earth = PIXI.Sprite.from('assets/earth_equirectangular');
+    // Load assets
+    await load(app);
 
-  // We need to create a quad first, this can be a square
-  const geometry = new PIXI.Geometry()
-    .addAttribute(
-      "a_position",
-      [
-        // Specify all the points in the geometry
-        -100,
-        -100, // x, y
-        100,
-        -100, // x, y
-        100,
-        100,
-        -100,
-        100,
-      ],
-      2
-    )
-    .addAttribute("a_uv", [0, 0, 1, 0, 1, 1, 0, 1], 2)
-    .addIndex([0, 1, 2, 0, 2, 3]); // Specify triangles with index in position
+    // I might need a rendertexture when generating my own planet texture
+    // const t = PIXI.RenderTexture.create({width: p.width, height: p.height})
+    // app.renderer.render(p, t);
 
-  let shaders = new PIXI.Program(
-    app.loader.resources["assets/planet_vertex.glsl"].data,
-    app.loader.resources["assets/planet.glsl"].data
-  );
+    // Handle window resizing
+    window.addEventListener("resize", (e) => {
+        app.renderer.resize(window.innerWidth, window.innerHeight);
+    });
 
-  const uniforms = {
-    u_sampler2D: PIXI.Texture.from("/assets/earth_equirectangular.png"),
-    time: 20,
-  };
+    // We need to create a quad first, this can be a square
+    const geometry = new PIXI.Geometry()
+        .addAttribute(
+            "a_position",
+            [
+                // Specify all the points in the geometry
+                -200,-200, // x, y
+                200,-200, // x, y
+                200,200,
+                -200,200,
+            ],
+            2
+        )
+        .addAttribute("a_uv", [0, 0, 1, 0, 1, 1, 0, 1], 2)
+        .addIndex([0, 1, 2, 0, 2, 3]); // Specify triangles with index in position
 
-  let planet_shader = new PIXI.Shader(shaders, uniforms);
+    let shaders = new PIXI.Program(
+        app.loader.resources["assets/planet_vertex.glsl"].data,
+        app.loader.resources["assets/planet.glsl"].data
+    );
 
-  // // I'll need a mesh according to https://api.pixijs.io/@pixi/mesh/PIXI/Mesh.html
-  let planet = new PIXI.Mesh(geometry, planet_shader);
-  app.stage.addChild(planet);
+    const uniforms = {
+        u_sampler2D: PIXI.Texture.from("/assets/earth_equirectangular.png"),
+        time: 20,
+    };
 
-  document.body.appendChild(app.view);
+    let planet_shader = new PIXI.Shader(shaders, uniforms);
 
-  // let context = {
-  //     velocity: { x: 1, y: 1},
-  //     // sprite
-  // };
+    // // I'll need a mesh according to https://api.pixijs.io/@pixi/mesh/PIXI/Mesh.html
+    let planet = new PIXI.Mesh(geometry, planet_shader);
+    app.stage.addChild(planet);
 
-  // app.ticker.add(update, context);
+    document.body.appendChild(app.view);
 
-  app.ticker.add((delta) => {
-    planet.shader.uniforms.time -= 0.001;
-  });
+    // let context = {
+    //     velocity: { x: 1, y: 1},
+    //     // sprite
+    // };
+
+    // app.ticker.add(update, context);
+
+    app.ticker.add((delta) => {
+        planet.shader.uniforms.time -= 0.001;
+    });
 };
 
 // Cannot be an arrow function. Arrow functions cannot have a 'this' parameter.
 function update(this: any, delta: number) {
-  if (
-    this.sprite.x <= 0 ||
-    this.sprite.x >= window.innerWidth - this.sprite.width
-  ) {
-    this.velocity.x = -this.velocity.x;
-  }
-  if (
-    this.sprite.y <= 0 ||
-    this.sprite.y >= window.innerHeight - this.sprite.height
-  ) {
-    this.velocity.y = -this.velocity.y;
-  }
-  this.sprite.x += this.velocity.x;
-  this.sprite.y += this.velocity.y;
+    if (
+        this.sprite.x <= 0 ||
+        this.sprite.x >= window.innerWidth - this.sprite.width
+    ) {
+        this.velocity.x = -this.velocity.x;
+    }
+    if (
+        this.sprite.y <= 0 ||
+        this.sprite.y >= window.innerHeight - this.sprite.height
+    ) {
+        this.velocity.y = -this.velocity.y;
+    }
+    this.sprite.x += this.velocity.x;
+    this.sprite.y += this.velocity.y;
 }
 
 main();
