@@ -27,7 +27,5 @@ void main() {
         gl_FragColor = texture2D(u_sampler2D, vec2(x3, y3));
     } else {
          gl_FragColor = vec4(0, 0, 0, 0);
-    // gl_FragColor = texture2D(u_sampler2D, v_uv + sin( (time + (v_uv.x) * 14.) ) * 0.1 );
-    // gl_FragColor = vec4(v_color);
     }
 }

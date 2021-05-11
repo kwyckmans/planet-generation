@@ -43,10 +43,10 @@ const main = async () => {
             "a_position",
             [
                 // Specify all the points in the geometry
-                -200,-200, // x, y
-                200,-200, // x, y
-                200,200,
-                -200,200,
+                -100,-100, // x, y
+                100,-100, // x, y
+                100,100,
+                -100,100,
             ],
             2
         )
