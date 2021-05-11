@@ -15,7 +15,7 @@ const load = (app: PIXI.Application) => {
 
 const main = async () => {
     // Actual app
-    let app = new PIXI.Application();
+    let app = new PIXI.Application({backgroundColor: 0x302535});
 
     // Display application properly
     document.body.style.margin = "0";
