@@ -67,8 +67,10 @@ const main = async () => {
 
     // I'll need a mesh according to https://api.pixijs.io/@pixi/mesh/PIXI/Mesh.html
     let planet = new PIXI.Mesh(geometry, planet_shader);
-    planet.position.set(800, 600)
-    
+
+    // TODO: replace with constants
+    planet.position.set( window.innerWidth / 2, window.innerHeight /2)
+
     app.stage.addChild(planet);
 
     document.body.appendChild(app.view);
