@@ -112,6 +112,10 @@ const main = async () => {
     // };
 
     // app.ticker.add(update, context);
+
+    app.ticker.add((delta) => {
+        planet.shader.uniforms.time -= 0.001;
+    })
 };
 
 // Cannot be an arrow function. Arrow functions cannot have a 'this' parameter.
@@ -127,6 +131,10 @@ function update(this: any, delta: number) {
 };
 
 main();
+
+/**
+ * Taken from https://pixijs.io/examples/#/mesh-and-shaders/triangle-textured.js
+ */
 // const app = new PIXI.Application();
 // document.body.appendChild(app.view);
 
@@ -164,6 +172,10 @@ main();
 // app.ticker.add((delta) => {
 //     triangle.rotation += 0.01;
 // });
+
+/**
+ * Taken from https://pixijs.io/examples/?v=v5.3.8#/mesh-and-shaders/interleaving-geometry.js
+ */
 
 // const app = new PIXI.Application();
 // document.body.appendChild(app.view);
