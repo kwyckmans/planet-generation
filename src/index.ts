@@ -5,7 +5,9 @@ const load = (app: PIXI.Application) => {
     return new Promise((resolve) => {
         app.loader
             .add("assets/test.glsl")
-            .add("assets/earth_equirectangular")
+            .add("assets/planet.glsl")
+            .add("assets/planet_vertex.glsl")
+            .add("assets/earth_equirectangular.png")
             .load(() => {
                 resolve();
         });
@@ -14,7 +16,7 @@ const load = (app: PIXI.Application) => {
 
 const main = async () => {
     // Actual app
-    let app = new PIXI.Application({backgroundColor: 0x222222})
+    let app = new PIXI.Application()
 
     // Display application properly
     document.body.style.margin = '0';
@@ -61,19 +63,53 @@ const main = async () => {
 
 
     //Show a planet
-    const earth = PIXI.Sprite.from('assets/earth_equirectangular');
-    earth.anchor.set(0.5);
+    // const earth = PIXI.Sprite.from('assets/earth_equirectangular');
 
-    const circle =new PIXI.Circle(100,100, 125)
-    
-    earth.mask = PIXI.MaskData.
+    // We need to create a quad first, this can be a square
+    const geometry = new PIXI.Geometry()
+            .addAttribute("a_position",[ // Specify all the points in the geometry
+                -100, -100, // x, y
+                100, -100, // x, y
+                100, 100,
+                -100, 100], 2)
+                
+            .addAttribute('a_uv', [
+                0,0,
+                1,0,
+                1,1,
+                0,1
+            ],2)
+            // .addAttribute('a_color', [
+            //     1, 0, 0,
+            //     0, 1, 0,
+            //     0, 0, 1,
+            //     1, 0, 0,
+            // ], 3)
+            .addIndex([0, 1, 2, 0, 2, 3]); // Specify triangles with index in position
+            
+
+    let shaders = new PIXI.Program( app.loader.resources["assets/planet_vertex.glsl"].data, app.loader.resources["assets/planet.glsl"].data);
+
+    const uniforms = {
+        u_sampler2D: PIXI.Texture.from('/assets/earth_equirectangular.png'),
+        time: 20,
+    };
+
+    let planet_shader = new PIXI.Shader(shaders, uniforms);
+
+    // // I'll need a mesh according to https://api.pixijs.io/@pixi/mesh/PIXI/Mesh.html
+    let planet = new PIXI.Mesh(geometry, planet_shader);
+    planet.position.set(400, 300)
+    planet.scale.set(2)
+    // planet.texture = texture;
+    app.stage.addChild(planet);
 
     document.body.appendChild(app.view);
 
-    let context = {
-        velocity: { x: 1, y: 1},
-        // sprite
-    };
+    // let context = {
+    //     velocity: { x: 1, y: 1},
+    //     // sprite
+    // };
 
     // app.ticker.add(update, context);
 };
@@ -91,3 +127,113 @@ function update(this: any, delta: number) {
 };
 
 main();
+// const app = new PIXI.Application();
+// document.body.appendChild(app.view);
+
+// app.loader
+//     .add("assets/planet.glsl")
+//     .add("assets/planet_vertex.glsl")
+//     .load()
+
+// const geometry = new PIXI.Geometry()
+//     .addAttribute('aVertexPosition', // the attribute name
+//         [-100, -50, // x, y
+//             100, -50, // x, y
+//             0.0, 100.0], // x, y
+//         2) // the size of the attribute
+//     .addAttribute('aTextureCoord',[
+//         0, 0,
+//         0,0,
+//         0,0
+//     ], 2
+//     )
+//     .addAttribute('aColor', // the attribute name
+//         [1, 0, 0, // r, g, b
+//             0, 1, 0, // r, g, b
+//             0, 0, 1], // r, g, b
+//         3); // the size of the attribute
+
+// const shader = PIXI.Shader.from( app.loader.resources["assets/planet_vertex.glsl"].data)
+
+// const triangle = new PIXI.Mesh(geometry, shader);
+// triangle.position.set(400, 300);
+// triangle.scale.set(2);
+
+// app.stage.addChild(triangle);
+
+// app.ticker.add((delta) => {
+//     triangle.rotation += 0.01;
+// });
+
+// const app = new PIXI.Application();
+// document.body.appendChild(app.view);
+
+// const geometry = new PIXI.Geometry()
+//     .addAttribute('aVertexPosition', // the attribute name
+//         [-100, -100, // x, y
+//             100, -100, // x, y
+//             100, 100,
+//             -100, 100], // x, y
+//         2) // the size of the attribute
+//     .addAttribute('aUvs', // the attribute name
+//         [0, 0, // u, v
+//             1, 0, // u, v
+//             1, 1,
+//             0, 1], // u, v
+//         2) // the size of the attribute
+//     .addIndex([0, 1, 2, 0, 2, 3]);
+
+// const vertexSrc = `
+
+//     precision mediump float;
+
+//     attribute vec2 aVertexPosition;
+//     attribute vec2 aUvs;
+
+//     uniform mat3 translationMatrix;
+//     uniform mat3 projectionMatrix;
+
+//     varying vec2 vUvs;
+
+//     void main() {
+
+//         vUvs = aUvs;
+//         gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);
+
+//     }`;
+
+// const fragmentSrc = `
+
+//     precision mediump float;
+
+//     varying vec2 vUvs;
+
+//     uniform sampler2D uSampler2;
+//     uniform float time;
+
+//     void main() {
+
+//         gl_FragColor = texture2D(uSampler2, vUvs + sin( (time + (vUvs.x) * 14.) ) * 0.1 );
+//     }`;
+
+// const uniforms = {
+//     uSampler2: PIXI.Texture.from('/assets/earth_equirectangular.png'),
+//     time: 0,
+// };
+
+// const shader = PIXI.Shader.from(vertexSrc, fragmentSrc, uniforms);
+
+// const quad = new PIXI.Mesh(geometry, shader);
+
+// quad.position.set(400, 300);
+// quad.scale.set(2);
+
+// app.stage.addChild(quad);
+
+// // start the animation..
+// // requestAnimationFrame(animate);
+
+// app.ticker.add((delta) => {
+//     quad.rotation += 0.01;
+//     quad.shader.uniforms.time += 0.1;
+// });
