@@ -104,47 +104,6 @@ function update(this: any, delta: number) {
 main();
 
 /**
- * Taken from https://pixijs.io/examples/#/mesh-and-shaders/triangle-textured.js
- */
-// const app = new PIXI.Application();
-// document.body.appendChild(app.view);
-
-// app.loader
-//     .add("assets/planet.glsl")
-//     .add("assets/planet_vertex.glsl")
-//     .load()
-
-// const geometry = new PIXI.Geometry()
-//     .addAttribute('aVertexPosition', // the attribute name
-//         [-100, -50, // x, y
-//             100, -50, // x, y
-//             0.0, 100.0], // x, y
-//         2) // the size of the attribute
-//     .addAttribute('aTextureCoord',[
-//         0, 0,
-//         0,0,
-//         0,0
-//     ], 2
-//     )
-//     .addAttribute('aColor', // the attribute name
-//         [1, 0, 0, // r, g, b
-//             0, 1, 0, // r, g, b
-//             0, 0, 1], // r, g, b
-//         3); // the size of the attribute
-
-// const shader = PIXI.Shader.from( app.loader.resources["assets/planet_vertex.glsl"].data)
-
-// const triangle = new PIXI.Mesh(geometry, shader);
-// triangle.position.set(400, 300);
-// triangle.scale.set(2);
-
-// app.stage.addChild(triangle);
-
-// app.ticker.add((delta) => {
-//     triangle.rotation += 0.01;
-// });
-
-/**
  * Taken from https://pixijs.io/examples/?v=v5.3.8#/mesh-and-shaders/interleaving-geometry.js
  */
 
