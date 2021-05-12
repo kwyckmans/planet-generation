@@ -25,4 +25,4 @@ npm run dev
 ## Resources
 
 - [Planet Generator](https://github.com/ZKasica/Planet-Generator/) by @ZKasica
-- [2D representation of a rotating spherre](https://gamedev.stackexchange.com/questions/9346/2d-shader-to-draw-representation-of-rotating-sphere)
+- [2D representation of a rotating sphere](https://gamedev.stackexchange.com/questions/9346/2d-shader-to-draw-representation-of-rotating-sphere)
