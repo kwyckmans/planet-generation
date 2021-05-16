@@ -30,3 +30,9 @@ npm run dev
 - [Pixel shader basics](http://wiki.winamp.com/wiki/Pixel_Shader_Basics)
 - [Textured triangle in Pixi.js](https://pixijs.io/examples/#/mesh-and-shaders/triangle-textured.js)
 
+### Tileable noise mpas
+
+- https://ronvalstar.nl/creating-tileable-noise-maps (did not use this)
+
+- Used https://gamedev.stackexchange.com/questions/23625/how-do-you-generate-tileable-perlin-noise/23639#23639 which uses:
+- https://www.gamedev.net/blog/33/entry-2138456-seamless-noise/

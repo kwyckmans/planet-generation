@@ -19,6 +19,7 @@
         "webpack-dev-server": "^3.10.3"
     },
     "dependencies": {
+        "open-simplex-noise": "latest",
         "pixi.js": "5.2.1"
     }
 }

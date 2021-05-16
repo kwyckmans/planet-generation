@@ -1,4 +1,9 @@
 import * as PIXI from "pixi.js";
+import { makeNoise2D, makeNoise4D } from "open-simplex-noise";
+
+// https://github.com/joshforisha/open-simplex-noise-js
+const noise2D = makeNoise2D(Math.random()); 
+const noise4D = makeNoise4D(getRandomInt(0, 1000));
 
 const load = (app: PIXI.Application) => {
     return new Promise((resolve) => {
@@ -58,22 +63,80 @@ const main = async () => {
         app.loader.resources["assets/planet.glsl"].data
     );
 
-    const width = 512;
-    const height = 512;
-    const size = width * height * 4; 
+    const width = 2056;
+    const height = 1024;
+    const size = width * height * 4; // 400
     let buffer = new Uint8Array(size);
 
-    for (let index = 0; index < size; index = index + 4) {
-        buffer[index] = 47;
-        buffer[index + 1] = 86;
-        buffer[index + 2] = 118;
-        buffer[index + 3] = 255;
+    for (let y = 0; y < height; y++){    
+        for (let x = 0; x < width; x++) { // buffer needs to be filled line by line.
+
+            // let value = noise2D(x/100, y/100);
+            let index = ((x+y) + (y * (width - 1))) * 4 
+
+            let x1=0;
+            let x2=10;
+            let y1=0;
+            let y2=10;
+
+            let s=x/width
+            let t=y/height
+            let dx=x2-x1
+            let dy=y2-y1
+    
+            let nx=x1+Math.cos(s*2*Math.PI)*dx/(2*Math.PI)
+            let ny=y1+Math.cos(t*2*Math.PI)*dy/(2*Math.PI)
+            let nz=x1+Math.sin(s*2*Math.PI)*dx/(2*Math.PI)
+            let nw=y1+Math.sin(t*2*Math.PI)*dy/(2*Math.PI)
+
+            let value = Math.abs(noise4D(nx,ny,nz,nw));
+
+            // Gas giant values: 0.1, 0.3, the rest
+
+            // (0 + 1) + (1 * 9) * 4
+            // console.log(x, y, index, noise);
+            if (value < 0.2){ //water 
+                buffer[index] = 47;
+                buffer[index + 1] = 86;
+                buffer[index + 2] = 118;
+                buffer[index + 3] = 255;
+            } else if (value < 0.3) {
+                buffer[index] = 62;
+                buffer[index + 1] = 120;
+                buffer[index + 2] = 160;
+                buffer[index + 3] = 255;
+            } else {
+                buffer[index] = 146;
+                buffer[index + 1] = 209;
+                buffer[index + 2] = 135;
+                buffer[index + 3] = 255;
+            }
+        }
     }
+
+    // This shows that the buffer fills the X values first and then goes down,
+    // Whis is important to know for noise generation
+    // for (let index = 0; index < size; index = index + 4) {
+    //     if (index / 4 <= width * 200){
+    //         buffer[index] = 47;
+    //         buffer[index + 1] = 86;
+    //         buffer[index + 2] = 118;
+    //         buffer[index + 3] = 255;
+    //     } else {
+    //         buffer[index] = 255;
+    //         buffer[index + 1] = 0;
+    //         buffer[index + 2] = 0;
+    //         buffer[index + 3] = 255;
+    //     }
+    // }
+
+    let planet_texture = PIXI.Texture.fromBuffer(buffer, width, height);
+    let planet_sprite = PIXI.Sprite.from(planet_texture);
 
     const uniforms = {
         // u_sampler2D: PIXI.Texture.from("/assets/earth_equirectangular.png"),
         u_sampler2D: PIXI.Texture.fromBuffer(buffer, width, height),
-        time: 20,
+        time: 0,
     };
 
     let planet_shader = new PIXI.Shader(shaders, uniforms);
@@ -85,7 +148,7 @@ const main = async () => {
     planet.position.set( window.innerWidth / 2, window.innerHeight /2)
 
     app.stage.addChild(planet);
-
+    // app.stage.addChild(planet_sprite);
     document.body.appendChild(app.view);
 
     // let context = {
@@ -119,3 +182,9 @@ function update(this: any, delta: number) {
 }
 
 main();
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+function getRandomInt(min: number, max: number) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+  }
