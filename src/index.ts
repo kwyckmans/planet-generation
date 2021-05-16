@@ -58,8 +58,21 @@ const main = async () => {
         app.loader.resources["assets/planet.glsl"].data
     );
 
+    const width = 512;
+    const height = 512;
+    const size = width * height * 4; 
+    let buffer = new Uint8Array(size);
+
+    for (let index = 0; index < size; index = index + 4) {
+        buffer[index] = 47;
+        buffer[index + 1] = 86;
+        buffer[index + 2] = 118;
+        buffer[index + 3] = 255;
+    }
+
     const uniforms = {
-        u_sampler2D: PIXI.Texture.from("/assets/earth_equirectangular.png"),
+        // u_sampler2D: PIXI.Texture.from("/assets/earth_equirectangular.png"),
+        u_sampler2D: PIXI.Texture.fromBuffer(buffer, width, height),
         time: 20,
     };
 
