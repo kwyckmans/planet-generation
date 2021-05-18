@@ -33,38 +33,69 @@ const main = async () => {
     // Load assets
     await load(app);
 
-    // I might need a rendertexture when generating my own planet texture
-    // const t = PIXI.RenderTexture.create({width: p.width, height: p.height})
-    // app.renderer.render(p, t);
-
     // Handle window resizing
     window.addEventListener("resize", (e) => {
         app.renderer.resize(window.innerWidth, window.innerHeight);
     });
 
+    const width = 250; 
+    const height = 125;
+
     // We need to create a quad first, this can be a square
-    const geometry = new PIXI.Geometry()
-        .addAttribute(
-            "a_position",
-            [
-                // Specify all the points in the geometry
-                -100,-100, // x, y
-                100,-100, // x, y
-                100,100,
-                -100,100,
-            ],
-            2
-        )
-        .addAttribute("a_uv", [0, 0, 1, 0, 1, 1, 0, 1], 2)
-        .addIndex([0, 1, 2, 0, 2, 3]); // Specify triangles with index in position
+    const geometry = generateGeometry();
+
+    let planet_texture = generateTexture(width, height);
+    let planet_sprite = PIXI.Sprite.from(planet_texture);
+
+    const uniforms = {
+        // u_sampler2D: PIXI.Texture.from("/assets/earth_equirectangular.png"),
+        u_sampler2D: planet_texture,
+        time: 0,
+    };
 
     let shaders = new PIXI.Program(
         app.loader.resources["assets/planet_vertex.glsl"].data,
         app.loader.resources["assets/planet.glsl"].data
     );
 
-    const width = 250; 
-    const height = 125;
+    let planet_shader = new PIXI.Shader(shaders, uniforms);
+
+    // I'll need a mesh according to https://api.pixijs.io/@pixi/mesh/PIXI/Mesh.html
+    let planet = new PIXI.Mesh(geometry, planet_shader);
+
+    // TODO: replace with constants
+    planet.position.set( window.innerWidth / 2, window.innerHeight /2)
+
+    app.stage.addChild(planet);
+    // app.stage.addChild(planet_sprite);
+    document.body.appendChild(app.view);
+
+    app.ticker.add((delta) => {
+        planet.shader.uniforms.time -= 0.005;
+    });
+};
+
+
+main();
+
+function generateGeometry(): PIXI.Geometry {
+    return new PIXI.Geometry()
+    .addAttribute(
+        "a_position",
+        [
+            // Specify all the points in the geometry
+            -100,-100, // x, y
+            100,-100, // x, y
+            100,100,
+            -100,100,
+        ],
+        2
+    )
+    .addAttribute("a_uv", [0, 0, 1, 0, 1, 1, 0, 1], 2)
+    .addIndex([0, 1, 2, 0, 2, 3]); // Specify triangles with index in position
+}
+
+function generateTexture(width: number, height: number): PIXI.Texture {
     const size = width * height * 4; // 400
     let buffer = new Uint8Array(size);
 
@@ -93,12 +124,7 @@ const main = async () => {
 
             let value = Math.abs(noise4D(nx,ny,nz,nw));
 
-            // let value = Math.abs(noise2D(x/100, y/100));
-
             // Gas giant values: 0.1, 0.3, the rest
-
-            // (0 + 1) + (1 * 9) * 4
-            // console.log(x, y, index, noise);
             if (value < 0.1){ //water 
                 buffer[index] = 47;
                 buffer[index + 1] = 86;
@@ -116,7 +142,7 @@ const main = async () => {
                 buffer[index + 2] = 155;
                 buffer[index + 3] = 255;
             }
-            else if (value < 0.45) {
+            else if (value < 0.50) {
                 buffer[index] = 146;
                 buffer[index + 1] = 209;
                 buffer[index + 2] = 135;
@@ -131,76 +157,10 @@ const main = async () => {
         }
     }
 
-    // This shows that the buffer fills the X values first and then goes down,
-    // Whis is important to know for noise generation
-    // for (let index = 0; index < size; index = index + 4) {
-    //     if (index / 4 <= width * 200){
-    //         buffer[index] = 47;
-    //         buffer[index + 1] = 86;
-    //         buffer[index + 2] = 118;
-    //         buffer[index + 3] = 255;
-    //     } else {
-    //         buffer[index] = 255;
-    //         buffer[index + 1] = 0;
-    //         buffer[index + 2] = 0;
-    //         buffer[index + 3] = 255;
-    //     }
-    // }
-
     let planet_texture = PIXI.Texture.fromBuffer(buffer, width, height);
-    let planet_sprite = PIXI.Sprite.from(planet_texture);
-    planet_sprite.width = 1000;
-    planet_sprite.height = 500;
-
-    const uniforms = {
-        // u_sampler2D: PIXI.Texture.from("/assets/earth_equirectangular.png"),
-        u_sampler2D: PIXI.Texture.fromBuffer(buffer, width, height),
-        time: 0,
-    };
-
-    let planet_shader = new PIXI.Shader(shaders, uniforms);
-
-    // I'll need a mesh according to https://api.pixijs.io/@pixi/mesh/PIXI/Mesh.html
-    let planet = new PIXI.Mesh(geometry, planet_shader);
-
-    // TODO: replace with constants
-    planet.position.set( window.innerWidth / 2, window.innerHeight /2)
-
-    app.stage.addChild(planet);
-    // app.stage.addChild(planet_sprite);
-    document.body.appendChild(app.view);
-
-    // let context = {
-    //     velocity: { x: 1, y: 1},
-    //     // sprite
-    // };
-
-    // app.ticker.add(update, context);
-
-    app.ticker.add((delta) => {
-        planet.shader.uniforms.time -= 0.01;
-    });
-};
-
-// Cannot be an arrow function. Arrow functions cannot have a 'this' parameter.
-function update(this: any, delta: number) {
-    if (
-        this.sprite.x <= 0 ||
-        this.sprite.x >= window.innerWidth - this.sprite.width
-    ) {
-        this.velocity.x = -this.velocity.x;
-    }
-    if (
-        this.sprite.y <= 0 ||
-        this.sprite.y >= window.innerHeight - this.sprite.height
-    ) {
-        this.velocity.y = -this.velocity.y;
-    }
-    this.sprite.x += this.velocity.x;
-    this.sprite.y += this.velocity.y;
+    return planet_texture;
 }
 
-main();
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
 function getRandomInt(min: number, max: number) {
     min = Math.ceil(min);
