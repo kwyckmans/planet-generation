@@ -63,7 +63,7 @@ const main = async () => {
         app.loader.resources["assets/planet.glsl"].data
     );
 
-    const width = 2056;
+    const width = 2056; // Lower than this gives me a visible seam. No idea why. 
     const height = 1024;
     const size = width * height * 4; // 400
     let buffer = new Uint8Array(size);
