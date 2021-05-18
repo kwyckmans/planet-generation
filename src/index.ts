@@ -63,8 +63,8 @@ const main = async () => {
         app.loader.resources["assets/planet.glsl"].data
     );
 
-    const width = 2056; // Lower than this gives me a visible seam. No idea why. 
-    const height = 1024;
+    const width = 250; 
+    const height = 125;
     const size = width * height * 4; // 400
     let buffer = new Uint8Array(size);
 
@@ -75,14 +75,16 @@ const main = async () => {
             let index = ((x+y) + (y * (width - 1))) * 4 
 
             let x1=0;
-            let x2=10;
+            let x2=5;
             let y1=0;
-            let y2=10;
-
-            let s=x/width
-            let t=y/height
+            let y2=5;
+           
+            let s: number=x/width
+            let t: number=y/height
             let dx=x2-x1
             let dy=y2-y1
+
+            // console.log(s, t, dx, dy);
     
             let nx=x1+Math.cos(s*2*Math.PI)*dx/(2*Math.PI)
             let ny=y1+Math.cos(t*2*Math.PI)*dy/(2*Math.PI)
@@ -91,24 +93,39 @@ const main = async () => {
 
             let value = Math.abs(noise4D(nx,ny,nz,nw));
 
+            // let value = Math.abs(noise2D(x/100, y/100));
+
             // Gas giant values: 0.1, 0.3, the rest
 
             // (0 + 1) + (1 * 9) * 4
             // console.log(x, y, index, noise);
-            if (value < 0.2){ //water 
+            if (value < 0.1){ //water 
                 buffer[index] = 47;
                 buffer[index + 1] = 86;
                 buffer[index + 2] = 118;
                 buffer[index + 3] = 255;
-            } else if (value < 0.3) {
+            } else if (value < 0.2) {
                 buffer[index] = 62;
                 buffer[index + 1] = 120;
                 buffer[index + 2] = 160;
                 buffer[index + 3] = 255;
-            } else {
+            
+            } else if (value < 0.3) {
+                buffer[index] = 166;
+                buffer[index + 1] = 229;
+                buffer[index + 2] = 155;
+                buffer[index + 3] = 255;
+            }
+            else if (value < 0.45) {
                 buffer[index] = 146;
                 buffer[index + 1] = 209;
                 buffer[index + 2] = 135;
+                buffer[index + 3] = 255;
+            }
+            else {
+                buffer[index] = 139;
+                buffer[index + 1] = 69;
+                buffer[index + 2] = 19;
                 buffer[index + 3] = 255;
             }
         }
@@ -132,6 +149,8 @@ const main = async () => {
 
     let planet_texture = PIXI.Texture.fromBuffer(buffer, width, height);
     let planet_sprite = PIXI.Sprite.from(planet_texture);
+    planet_sprite.width = 1000;
+    planet_sprite.height = 500;
 
     const uniforms = {
         // u_sampler2D: PIXI.Texture.from("/assets/earth_equirectangular.png"),
@@ -159,7 +178,7 @@ const main = async () => {
     // app.ticker.add(update, context);
 
     app.ticker.add((delta) => {
-        planet.shader.uniforms.time -= 0.001;
+        planet.shader.uniforms.time -= 0.01;
     });
 };
 

@@ -26,6 +26,6 @@ void main() {
     if(r <= 1.0) {
         gl_FragColor = texture2D(u_sampler2D, vec2(x3, y3));
     } else {
-         gl_FragColor = vec4(0, 0, 0, 0); // alpha is 0, so becomes transparant
+        gl_FragColor = vec4(0, 0, 0, 0); // alpha is 0, so becomes transparant
     }
 }
